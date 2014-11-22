@@ -6,6 +6,8 @@ class GumballStatelessController {
 
 	def String machineSerialNum = "123abc"
 	def GumballMachine gumballMachine
+	def int salt = 12;
+	def timestamp;
 	
 	def index() {
 		
@@ -35,8 +37,13 @@ class GumballStatelessController {
 			flash.model = gumball.modelNumber ;
 			flash.serial = gumball.serialNumber ;
 			
+			/** include extra value for encryption **/
+			flash.salt = salt;
+			flash.timestamp = new Date()
+
+			
 			// report a message to user
-			flash.message = gumballMachine.getAbout()
+			flash.message = gumballMachine.getAbout();
 
 			// display view
 			render(view: "index")
@@ -46,7 +53,7 @@ class GumballStatelessController {
 
 			// dump out request object
 			request.each { key, value ->
-				println( "request: $key = $value")
+				println( "request: ${key} = ${value}")
 			}
 
 			// dump out params
@@ -54,8 +61,17 @@ class GumballStatelessController {
 				println( "params: $key = $value" )
 			}
 			
+			
+			
 			// don't get machine from session
 			// gumballMachine = session.machine
+			
+			/** decrypt the params and check against the original value **/
+			/*params?.state.decodeAsSHA256()
+			println params?.state
+			println params?.model
+			println params?.serial*/
+			
 
 			// restore machine to client state (instead)
 			def state = params?.state
