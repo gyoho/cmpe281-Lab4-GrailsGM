@@ -10,9 +10,14 @@
 		<!-- FORM SECTION -->
 		<form name="form1" method="post" action="">
 		    <p>
-			    <input type="hidden" name="state" id="state" value="${(flash.state + flash.timestamp + flash.salt).encodeAsSHA256()}" />
-			    <input type="hidden" name="model" id="model" value="${(flash.model + flash.timestamp + flash.salt).encodeAsSHA256()}" />
-			    <input type="hidden" name="serial" id="serial" value="${(flash.serial + flash.timestamp + flash.salt).encodeAsSHA256()}" />
+			    <input type="hidden" name="state" id="state" value="${flash.state}" />
+			    <input type="hidden" name="model" id="model" value="${flash.model}" />
+			    <input type="hidden" name="serial" id="serial" value="${flash.serial}" />
+			    <input type="hidden" name="timestamp" id="timestamp" value="${flash.timestamp}" />
+			    <input type="hidden" name="salt" id="salt" value="${flash.salt}" />
+			    <input type="hidden" name="hash" id="hash" value="${(flash.state + flash.model
+					 + flash.serial + flash.timestamp + flash.salt).encodeAsSHA256()}" />
+			    
 			    
 			    <div align="center">
 			        <textarea name="message" cols="50" rows="15" readonly id="message">

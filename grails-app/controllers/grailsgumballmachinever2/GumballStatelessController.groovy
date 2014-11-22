@@ -37,10 +37,9 @@ class GumballStatelessController {
 			flash.model = gumball.modelNumber ;
 			flash.serial = gumball.serialNumber ;
 			
-			/** include extra value for encryption **/
+			// include extra value for encryption
+			flash.timestamp = new Date();
 			flash.salt = salt;
-			flash.timestamp = new Date()
-
 			
 			// report a message to user
 			flash.message = gumballMachine.getAbout();
@@ -62,58 +61,76 @@ class GumballStatelessController {
 			}
 			
 			
-			
 			// don't get machine from session
 			// gumballMachine = session.machine
 			
-			/** decrypt the params and check against the original value **/
-			/*params?.state.decodeAsSHA256()
-			println params?.state
-			println params?.model
-			println params?.serial*/
-			
-
-			// restore machine to client state (instead)
+			/** check the data integrity by 
+			 *  regenerate the hash and match
+			 *  against the original
+			 **/
+			// get each parameter
 			def state = params?.state
 			def modelNum = params?.model
 			def serialNum = params?.serial
-			gumballMachine = new GumballMachine(modelNum, serialNum) ;
-			gumballMachine.setCurrentState(state) ;
+			def timestamp = params?.timestamp
+			def salt = params?.salt
+			def originalHash = params?.hash
 			
-			System.out.println(gumballMachine.getAbout())
+			println "original hash val: ${originalHash}"
+
+			// generate the hash value
+			def newHash = (state + modelNum + serialNum + timestamp + salt).encodeAsSHA256()
 			
-			if ( params?.event == "Insert Quarter" )
-			{
-				gumballMachine.insertCoin()
-			}
-			if ( params?.event == "Turn Crank" )
-			{
-				gumballMachine.crankHandle();
+			println "new hash val: ${newHash}"
+			
+			if(originalHash == newHash) {
+
+				// restore machine to client state (instead)
+				gumballMachine = new GumballMachine(modelNum, serialNum) ;
+				gumballMachine.setCurrentState(state) ;
 				
-				if ( gumballMachine.getCurrentState().equals("gumball.CoinAcceptedState") )
+				System.out.println(gumballMachine.getAbout())
+				
+				if ( params?.event == "Insert Quarter" )
 				{
-					def gumball = Gumball.findBySerialNumber( machineSerialNum )
-					if ( gumball )
-					{						
-						// gumball.lock() // pessimistic lock
-						if ( gumball.countGumballs > 0)
-							gumball.countGumballs-- ;
-						gumball.save(flush: true); // default optimistic lock
-					}
+					gumballMachine.insertCoin()
 				}
+				if ( params?.event == "Turn Crank" )
+				{
+					gumballMachine.crankHandle();
+					
+					if ( gumballMachine.getCurrentState().equals("gumball.CoinAcceptedState") )
+					{
+						def gumball = Gumball.findBySerialNumber( machineSerialNum )
+						if ( gumball )
+						{						
+							// gumball.lock() // pessimistic lock
+							if ( gumball.countGumballs > 0)
+								gumball.countGumballs-- ;
+							gumball.save(flush: true); // default optimistic lock
+						}
+					}
+					
+				}
+	
+				// send machine state to client
+				flash.state = gumballMachine.getCurrentState() ;
+				flash.model = modelNum ;
+				flash.serial = serialNum ;
 				
+				// include extra value for encryption
+				flash.timestamp = new Date();
+				flash.salt = salt;
+							
+				// report a message to user
+				flash.message = gumballMachine.getAbout()
+	
+				// render view
+				render(view: "index")
 			}
-
-			// send machine state to client
-			flash.state = gumballMachine.getCurrentState() ;
-			flash.model = modelNum ;
-			flash.serial = serialNum ;
-						
-			// report a message to user
-			flash.message = gumballMachine.getAbout()
-
-			// render view
-			render(view: "index")
+			else {
+				render(view: "/error")
+			}
 		}
 		else {
 			render(view: "/error")

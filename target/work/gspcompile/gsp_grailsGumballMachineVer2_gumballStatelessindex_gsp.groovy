@@ -25,11 +25,11 @@ invokeTag('captureHead','sitemesh',5,[:],1)
 printHtmlPart(4)
 createTagBody(1, {->
 printHtmlPart(5)
-expressionOut.print(flash.state)
+expressionOut.print((flash.state + flash.timestamp + flash.salt).encodeAsSHA256())
 printHtmlPart(6)
-expressionOut.print(flash.model)
+expressionOut.print((flash.model + flash.timestamp + flash.salt).encodeAsSHA256())
 printHtmlPart(7)
-expressionOut.print(flash.serial)
+expressionOut.print((flash.serial + flash.timestamp + flash.salt).encodeAsSHA256())
 printHtmlPart(8)
 expressionOut.print(flash.message)
 printHtmlPart(9)
@@ -44,7 +44,7 @@ protected void init() {
 	this.jspTags = JSP_TAGS
 }
 public static final String CONTENT_TYPE = 'text/html;charset=UTF-8'
-public static final long LAST_MODIFIED = 1416543233000L
+public static final long LAST_MODIFIED = 1416608067000L
 public static final String EXPRESSION_CODEC = 'html'
 public static final String STATIC_CODEC = 'none'
 public static final String OUT_CODEC = 'html'
