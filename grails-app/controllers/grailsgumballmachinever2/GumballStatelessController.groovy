@@ -16,7 +16,7 @@ class GumballStatelessController {
 		if (request.method == "GET") {
 
 			// search db for gumball machine
-			def gumball = Gumball.findBySerialNumber( machineSerialNum )
+			def gumball = Inventory.findBySerialNumber( machineSerialNum )
 			if ( gumball )
 			{
 				// create a default machine
@@ -101,7 +101,7 @@ class GumballStatelessController {
 					
 					if ( gumballMachine.getCurrentState().equals("gumball.CoinAcceptedState") )
 					{
-						def gumball = Gumball.findBySerialNumber( machineSerialNum )
+						def gumball = Inventory.findBySerialNumber( machineSerialNum )
 						if ( gumball )
 						{						
 							// gumball.lock() // pessimistic lock
